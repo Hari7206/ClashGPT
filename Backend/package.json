@@ -20,6 +20,7 @@
     "@langchain/cohere": "^1.1.0",
     "@langchain/core": "^1.2.0",
     "@langchain/google": "^0.2.0",
+    "@langchain/langgraph": "^1.4.4",
     "@langchain/mistralai": "^1.2.0",
     "cohere": "^1.1.1",
     "dotenv": "^17.4.2",
