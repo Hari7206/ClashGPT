@@ -1,33 +1,63 @@
 import { HumanMessage } from "@langchain/core/messages";
-import { StateSchema, MessagesValue,  StateGraph, START, END } from "@langchain/langgraph";
-import  type { GraphNode } from "@langchain/langgraph";
+import { StateSchema, MessagesValue, StateGraph, START, END, ReducedValue } from "@langchain/langgraph";
+import { promise, z } from "zod"
+import { mistralModel, cohereModel } from "./model.service.js";
+import type { GraphNode } from "@langchain/langgraph";
 
 
 
 
-const state =  new StateSchema({
+const state = new StateSchema({
   message: MessagesValue,
-})
+  solution_1: new ReducedValue(z.string().default(""), {
+    reducer: (current, next) => {
+      return next
+    }
+  }),
+  solution_2: new ReducedValue(z.string().default(""), {
+    reducer: (current, next) => {
+      return next
+    }
+  }),
+  judge_recommendation: new ReducedValue(
+    z.object({
+      solution_1_score: z.number(),
+      solution_2_score: z.number(),
+    }).default({
+      solution_1_score: 0,
+      solution_2_score: 0,
+    }),
+    {
+      reducer: (current, next) => next,
+    }
+  ),
+});
 
-const solutionNode: GraphNode<typeof state> = (state) => {
-  console.log(state.message);
-
+const solutionNode: GraphNode<typeof state> = async (state) => {
+const [mistral_solution, cohere_solution] = await Promise.all([
+  mistralModel.invoke(state.message),
+  cohereModel.invoke(state.message),
+]);
   return {
-    message: state.message,
+    solution_1: mistral_solution.text,
+    solution_2: cohere_solution.text
   };
 };
 
 const graph = new StateGraph(state)
-.addNode("solution" , solutionNode)
-.addEdge(START , "solution")
-.compile();
+  .addNode("solution", solutionNode)
+  .addEdge(START, "solution")
+  .addEdge("solution" , END)
+  .compile();
 
 
-export default async function(userMessage:string) {
+export default async function (userMessage: string) {
   const result = await graph.invoke({
-    message:[
+    message: [
       new HumanMessage(userMessage)
     ]
   })
+  console.log(result);
+  
   return result.message
 }

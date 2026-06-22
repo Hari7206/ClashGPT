@@ -19,7 +19,7 @@ apiKey: config.MISTRAL_API_KEY,
 
 
 export const cohereModel = new ChatCohere({
-  model: "command-r-plus",
+  model: "command-r-08-2024",
   apiKey: config.COHERE_API_KEY,
   
 });
