@@ -1,8 +1,9 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { StateSchema, MessagesValue, StateGraph, START, END, ReducedValue } from "@langchain/langgraph";
 import { promise, z } from "zod"
-import { mistralModel, cohereModel } from "./model.service.js";
+import { mistralModel, cohereModel , geminiModel } from "./model.service.js";
 import type { GraphNode } from "@langchain/langgraph";
+import { createAgent  , providerStrategy} from "langchain";
 
 
 
@@ -44,10 +45,54 @@ const [mistral_solution, cohere_solution] = await Promise.all([
   };
 };
 
+const judgeNode: GraphNode<typeof state> = async (state) => {
+  console.log('invoking judge with state ' , state);
+  
+  const {solution_1 , solution_2} =  
+
+  const judge = createAgent({
+    model: geminiModel ,
+    tools: [] ,
+    responseFormat: providerStrategy(z.object({
+      solution_1_score: z.number().min(0).max(10) ,
+      solution_2_score: z.number().min(0).max(10),
+    }))
+  })
+  const judgeResponse = await judge.invoke({
+    messages: [
+      
+    new HumanMessage(`You are a strict evaluator.
+
+Compare these two answers:
+
+Solution 1:
+${state.solution_1}
+
+Solution 2:
+${state.solution_2}
+
+Return JSON only:
+{
+  "solution_1_score": number,
+  "solution_2_score": number
+}`)
+  ]
+    
+  })
+  const result = judgeResponse.structuredResponse
+
+  return {
+    judege_recommendation: result
+  }
+}
+
 const graph = new StateGraph(state)
   .addNode("solution", solutionNode)
+  .addNode("judge" , judgeNode)
   .addEdge(START, "solution")
-  .addEdge("solution" , END)
+  .addEdge("solution" , "judge")
+  .addEdge("judge" , END)
+
   .compile();
 
 

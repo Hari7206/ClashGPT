@@ -4,6 +4,7 @@ import { ChatMistralAI } from "@langchain/mistralai";
 import config from "../config/config.js";
 import readline from "readline";
 
+// clash gpt ai models
 
 
 export const geminiModel = new ChatGoogle({
