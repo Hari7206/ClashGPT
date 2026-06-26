@@ -110,20 +110,35 @@ Return ONLY valid JSON:
 
   console.log("RAW OUTPUT:", raw);
 
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+const jsonMatch = raw.match(/\{[\s\S]*\}/);
 
-  const result = jsonMatch
-    ? JSON.parse(jsonMatch[0])
-    : {
-        solution_1_score: 0,
-        solution_2_score: 0,
-      };
-
-  return {
-    judge_recommendation: result,
-  };
+let result = {
+  solution_1_score: 0,
+  solution_2_score: 0,
 };
 
+if (jsonMatch) {
+  try {
+    let json = jsonMatch[0];
+
+    // Remove JavaScript comments
+    json = json.replace(/\/\/.*$/gm, "");
+
+    // Remove trailing commas
+    json = json.replace(/,\s*}/g, "}");
+
+    result = JSON.parse(json);
+  } catch (err) {
+    console.error("Failed to parse judge JSON:", err);
+    console.log("Judge JSON was:", jsonMatch[0]);
+  }
+}
+
+return {
+  judge_recommendation: result,
+};
+
+}
 
 const graph = new StateGraph(state)
   .addNode("solution", solutionNode)
