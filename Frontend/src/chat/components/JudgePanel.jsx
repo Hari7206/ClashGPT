@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Trophy, Handshake, TrendingUp, AlignLeft, Star } from 'lucide-react';
-import { getQualityLabel, getQualityColor, countWords } from '../utils/data';
+import { getQualityColor, getQualityLabel, countWords } from '../../../src/utils/helpers.js'; // Adjust path as needed
 
 const ScoreCard = ({ modelName, modelIcon, modelColor, score, maxScore = 10, delay = 0, isWinner }) => {
   const [displayScore, setDisplayScore] = useState(0);

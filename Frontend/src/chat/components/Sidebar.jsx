@@ -12,20 +12,32 @@ import {
   Clock,
   Sparkles,
 } from 'lucide-react';
-import { SAMPLE_CONVERSATIONS, AI_MODELS, formatTimestamp } from '../utils/data';
+import {
+  formatTimestamp
+} from "../../../src/utils/helpers.js";
 
-const Sidebar = ({ isOpen, onClose, onNewChat, onSelectConversation, activeConversationId }) => {
-  const [conversations, setConversations] = useState(SAMPLE_CONVERSATIONS);
+const Sidebar = ({ 
+  isOpen, 
+  onClose, 
+  onNewChat, 
+  onSelectConversation, 
+  activeConversationId,
+  conversations = [],    // Passed from parent state
+  setConversations,      // Passed from parent state to handle mutation
+  models = []            // Passed from parent configuration
+}) => {
   const [activeSection, setActiveSection] = useState('chats');
   const [hoveredId, setHoveredId] = useState(null);
 
   const toggleFavorite = (id) => {
+    if (!setConversations) return;
     setConversations(prev =>
       prev.map(c => c.id === id ? { ...c, favorite: !c.favorite } : c)
     );
   };
 
   const deleteConversation = (id) => {
+    if (!setConversations) return;
     setConversations(prev => prev.filter(c => c.id !== id));
   };
 
@@ -99,7 +111,7 @@ const Sidebar = ({ isOpen, onClose, onNewChat, onSelectConversation, activeConve
           {[
             { id: 'chats', icon: <MessageSquare size={16} />, label: 'Recent Chats', count: conversations.length },
             { id: 'favorites', icon: <Star size={16} />, label: 'Favorites', count: favorites.length },
-            { id: 'models', icon: <Cpu size={16} />, label: 'AI Models', count: AI_MODELS.length },
+            { id: 'models', icon: <Cpu size={16} />, label: 'AI Models', count: models.length },
           ].map((item) => (
             <button
               key={item.id}
@@ -121,7 +133,7 @@ const Sidebar = ({ isOpen, onClose, onNewChat, onSelectConversation, activeConve
           ))}
         </div>
 
-        {/* Content */}
+        {/* Content Section */}
         <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1">
           {activeSection === 'chats' && (
             <div className="space-y-1">
@@ -203,7 +215,7 @@ const Sidebar = ({ isOpen, onClose, onNewChat, onSelectConversation, activeConve
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 py-1">
                 Available Models
               </p>
-              {AI_MODELS.map(model => (
+              {models.map(model => (
                 <div
                   key={model.id}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/50 cursor-pointer transition-colors group"
@@ -215,9 +227,9 @@ const Sidebar = ({ isOpen, onClose, onNewChat, onSelectConversation, activeConve
                   <span
                     className="text-xs px-2 py-0.5 rounded-full font-medium"
                     style={{
-                      background: `${model.color}20`,
-                      color: model.color,
-                      border: `1px solid ${model.color}30`,
+                      background: model.color ? `${model.color}20` : 'rgba(51,65,85,0.5)',
+                      color: model.color || '#94a3b8',
+                      border: model.color ? `1px solid ${model.color}30` : '1px solid transparent',
                     }}
                   >
                     {model.badge}
@@ -255,7 +267,7 @@ const ConversationItem = ({ conv, isActive, isHovered, onHover, onSelect, onFavo
     >
       <MessageSquare
         size={14}
-        className="flex-shrink-0"
+        className=""
         style={{ color: isActive ? '#22d3ee' : '#64748b' }}
       />
       <div className="flex-1 min-w-0">
@@ -270,7 +282,7 @@ const ConversationItem = ({ conv, isActive, isHovered, onHover, onSelect, onFavo
 
       {/* Action buttons on hover */}
       {isHovered && (
-        <div className="flex items-center gap-1 animate-fade-in">
+        <div className="flex items-center gap-1 animate-fade-in absolute right-2 bg-inherit pl-2">
           <button
             onClick={(e) => { e.stopPropagation(); onFavorite(); }}
             className="p-1 rounded-lg hover:bg-amber-500/20 transition-colors"

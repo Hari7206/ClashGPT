@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, Code2, User, Cpu, Gavel, Braces } from 'luci
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-const DevModePanel = ({ data }) => {
+const DevModePanel = ({ data = {} }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('json');
 
@@ -16,18 +16,20 @@ const DevModePanel = ({ data }) => {
   ];
 
   const getTabContent = () => {
+    const judge = data.judge_recommendation || {};
+
     switch (activeTab) {
       case 'prompt':
-        return data.message;
+        return data.message || '';
       case 'solution1':
-        return data.solution_1;
+        return data.solution_1 || '';
       case 'solution2':
-        return data.solution_2;
+        return data.solution_2 || '';
       case 'judge':
-        return `Solution 1 Score: ${data.judge_recommendation.solution_1_score}/10\nSolution 2 Score: ${data.judge_recommendation.solution_2_score}/10\n\nRecommendation: ${
-          data.judge_recommendation.solution_1_score > data.judge_recommendation.solution_2_score
+        return `Solution 1 Score: ${judge.solution_1_score || 0}/10\nSolution 2 Score: ${judge.solution_2_score || 0}/10\n\nRecommendation: ${
+          (judge.solution_1_score || 0) > (judge.solution_2_score || 0)
             ? 'Solution 1 is preferred'
-            : data.judge_recommendation.solution_2_score > data.judge_recommendation.solution_1_score
+            : (judge.solution_2_score || 0) > (judge.solution_1_score || 0)
             ? 'Solution 2 is preferred'
             : 'Both solutions are equally good'
         }`;

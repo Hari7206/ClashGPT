@@ -10,7 +10,6 @@ import {
   X,
 } from 'lucide-react';
 import MarkdownRenderer from './MarkdownRenderer';
-import { countWords } from '../utils/data';
 
 const AIResponseCard = ({
   modelName,
@@ -24,17 +23,22 @@ const AIResponseCard = ({
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  const wordCount = countWords(content);
+  const safeContent = content || "";
+  const wordCount = safeContent.trim() ? safeContent.trim().split(/\s+/).length : 0;
   const readTime = Math.ceil(wordCount / 200);
 
   const handleCopy = () => {
+    if (!content) return;
     navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (!date) return '';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -124,7 +128,7 @@ const AIResponseCard = ({
             maxHeight: expanded ? '100vh' : '420px',
           }}
         >
-          <MarkdownRenderer content={content} />
+          <MarkdownRenderer content={safeContent} />
         </div>
 
         {/* Card Footer */}
@@ -180,7 +184,7 @@ const AIResponseCard = ({
               </button>
             </div>
             <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 80px)' }}>
-              <MarkdownRenderer content={content} />
+              <MarkdownRenderer content={safeContent} />
             </div>
           </div>
         </div>

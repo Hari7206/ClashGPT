@@ -76,7 +76,7 @@ const CodeBlock = ({ language, value }) => {
 };
 
 // Main Markdown renderer
-const MarkdownRenderer = ({ content }) => {
+const MarkdownRenderer = ({ content = '' }) => {
   return (
     <div className="markdown-body">
       <ReactMarkdown
@@ -85,7 +85,7 @@ const MarkdownRenderer = ({ content }) => {
           code({ node, inline, className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
-            const value = String(children).replace(/\n$/, '');
+            const value = String(children || '').replace(/\n$/, '');
 
             if (!inline && (match || value.includes('\n'))) {
               return <CodeBlock language={language} value={value} />;

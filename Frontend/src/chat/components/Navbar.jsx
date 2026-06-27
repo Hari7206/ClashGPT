@@ -1,17 +1,18 @@
+
 import React, { useState } from 'react';
-import {
-  Zap,
-  PlusCircle,
-  Search,
-  Bell,
-  Sun,
-  Moon,
-  Menu,
-  User,
-  ChevronDown,
-  Settings,
-  LogOut,
-  HelpCircle,
+import { 
+  Menu, 
+  Zap, 
+  PlusCircle, 
+  Search, 
+  Bell, 
+  Sun, 
+  Moon, 
+  ChevronDown, 
+  User, 
+  Settings, 
+  HelpCircle, 
+  LogOut 
 } from 'lucide-react';
 
 const Navbar = ({ onToggleSidebar, onNewChat }) => {
