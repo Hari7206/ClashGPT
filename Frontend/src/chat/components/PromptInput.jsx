@@ -14,7 +14,6 @@ const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
   const [isRecording, setIsRecording] = useState(false);
   const textareaRef = useRef(null);
 
-  // Auto-resize textarea
   useEffect(() => {
     const el = textareaRef.current;
     if (el) {
@@ -43,7 +42,6 @@ const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
 
   return (
     <div className="relative">
-      {/* Input Container */}
       <div
         className="rounded-2xl transition-all duration-200"
         style={{
@@ -54,7 +52,6 @@ const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
             : '0 8px 32px rgba(0,0,0,0.2)',
         }}
       >
-        {/* Textarea */}
         <textarea
           ref={textareaRef}
           value={value}
@@ -81,10 +78,9 @@ const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
           className="placeholder-slate-500"
         />
 
-        {/* Bottom toolbar */}
         <div className="flex items-center justify-between px-3 pb-3">
           <div className="flex items-center gap-1">
-            {/* Attachment */}
+     
             <button
               className="btn-icon p-2"
               title="Attach file"
@@ -94,7 +90,6 @@ const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
               <Paperclip size={16} />
             </button>
 
-            {/* Voice */}
             <button
               className="btn-icon p-2"
               onClick={() => setIsRecording(!isRecording)}
@@ -111,14 +106,12 @@ const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
               {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
             </button>
 
-            {/* Hint text */}
             <span className="text-xs text-slate-600 ml-2 hidden sm:flex items-center gap-1">
               <CornerDownLeft size={11} />
               Send · Shift+Enter for new line
             </span>
           </div>
 
-          {/* Send Button */}
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
@@ -152,7 +145,6 @@ const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
         </div>
       </div>
 
-      {/* Character count */}
       {value.length > 200 && (
         <div className="absolute -top-6 right-1 text-xs text-slate-500">
           {value.length} chars

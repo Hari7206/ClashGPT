@@ -31,7 +31,7 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
       className="glass sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-slate-800/50"
       style={{ backdropFilter: 'blur(20px)' }}
     >
-      {/* Left: Logo + Menu */}
+      
       <div className="flex items-center gap-3">
         <button
           onClick={onToggleSidebar}
@@ -41,7 +41,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
           <Menu size={18} />
         </button>
 
-        {/* Logo */}
         <div className="flex items-center gap-2.5">
           <div
             className="flex items-center justify-center w-8 h-8 rounded-xl animate-float"
@@ -66,7 +65,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
         </div>
       </div>
 
-      {/* Center: New Chat */}
       <button
         onClick={onNewChat}
         className="btn-primary hidden sm:flex items-center gap-2 px-4 py-2 text-sm"
@@ -80,14 +78,12 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
         <span>New Chat</span>
       </button>
 
-      {/* Right: Icons */}
       <div className="flex items-center gap-1.5">
-        {/* Search */}
+     
         <button className="btn-icon p-2" aria-label="Search">
           <Search size={17} />
         </button>
 
-        {/* Notifications */}
         <div className="relative">
           <button
             className="btn-icon p-2 relative"
@@ -132,7 +128,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
           )}
         </div>
 
-        {/* Theme Toggle */}
         <button
           className="btn-icon p-2"
           onClick={() => setIsDark(!isDark)}
@@ -141,7 +136,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
           {isDark ? <Sun size={17} /> : <Moon size={17} />}
         </button>
 
-        {/* User Avatar */}
         <div className="relative">
           <button
             className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-800/60 transition-colors"
@@ -195,7 +189,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
         </div>
       </div>
 
-      {/* Click outside handler */}
       {(showUserMenu || showNotifications) && (
         <div
           className="fixed inset-0 z-40"

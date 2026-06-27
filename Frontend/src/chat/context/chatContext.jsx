@@ -14,7 +14,7 @@ export const ChatProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
 
-    // Add user message
+
     const userMessage = {
       id: Date.now(),
       type: "user",
@@ -28,7 +28,7 @@ export const ChatProvider = ({ children }) => {
       
       console.log("📦 API Response:", data);
 
-      // Create AI message - data already has the right structure
+      
       const aiMessage = {
         id: Date.now() + 1,
         type: "ai",

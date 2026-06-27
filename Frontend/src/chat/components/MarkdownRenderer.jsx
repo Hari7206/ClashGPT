@@ -5,7 +5,6 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 
-// Custom code block component
 const CodeBlock = ({ language, value }) => {
   const [copied, setCopied] = useState(false);
 
@@ -75,7 +74,6 @@ const CodeBlock = ({ language, value }) => {
   );
 };
 
-// Main Markdown renderer
 const MarkdownRenderer = ({ content = '' }) => {
   return (
     <div className="markdown-body">

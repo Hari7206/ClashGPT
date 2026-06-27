@@ -48,7 +48,7 @@ const FEATURES = [
 const WelcomeScreen = ({ onSelectPrompt }) => {
   return (
     <div className="flex flex-col items-center justify-center py-8 px-4 animate-fade-in-up min-h-[60vh]">
-      {/* Hero */}
+ 
       <div className="text-center mb-10">
         <div className="flex items-center justify-center mb-5">
           <div
@@ -99,7 +99,7 @@ const WelcomeScreen = ({ onSelectPrompt }) => {
         </p>
       </div>
 
-      {/* Feature Cards */}
+     
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-2xl mb-10">
         {FEATURES.map((feature) => (
           <div
@@ -125,7 +125,6 @@ const WelcomeScreen = ({ onSelectPrompt }) => {
         ))}
       </div>
 
-      {/* Example Prompts */}
       <div className="w-full max-w-2xl">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles size={14} style={{ color: '#a78bfa' }} />

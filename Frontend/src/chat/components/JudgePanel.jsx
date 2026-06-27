@@ -77,7 +77,7 @@ const ScoreCard = ({ modelName, modelIcon, modelColor, score, maxScore = 10, del
         </div>
       </div>
 
-      {/* Progress bar */}
+    
       <div className="progress-bar-track">
         <div
           className="progress-bar-fill"
@@ -91,7 +91,6 @@ const ScoreCard = ({ modelName, modelIcon, modelColor, score, maxScore = 10, del
         />
       </div>
 
-      {/* Score dots */}
       <div className="flex gap-1 mt-3">
         {Array.from({ length: maxScore }).map((_, i) => (
           <div
@@ -218,7 +217,7 @@ const JudgePanel = ({
 
   return (
     <div className="space-y-6 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-      {/* Heading */}
+
       <div className="flex items-center gap-3">
         <div
           className="flex items-center justify-center w-10 h-10 rounded-xl"
@@ -234,8 +233,6 @@ const JudgePanel = ({
           <p className="text-xs text-slate-400">Objective model evaluation</p>
         </div>
       </div>
-
-      {/* Score Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <ScoreCard
           modelName={model1Name}
@@ -255,7 +252,6 @@ const JudgePanel = ({
         />
       </div>
 
-      {/* Result Banner */}
       <div
         className="flex items-center justify-center gap-3 py-4 px-6 rounded-2xl animate-bounce-in"
         style={{
@@ -292,7 +288,6 @@ const JudgePanel = ({
         )}
       </div>
 
-      {/* Comparison Table */}
       <div>
         <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">
           Comparison Summary

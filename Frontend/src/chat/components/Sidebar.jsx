@@ -22,9 +22,9 @@ const Sidebar = ({
   onNewChat, 
   onSelectConversation, 
   activeConversationId,
-  conversations = [],    // Passed from parent state
-  setConversations,      // Passed from parent state to handle mutation
-  models = []            // Passed from parent configuration
+  conversations = [],    
+  setConversations,     
+  models = []           
 }) => {
   const [activeSection, setActiveSection] = useState('chats');
   const [hoveredId, setHoveredId] = useState(null);
@@ -46,7 +46,6 @@ const Sidebar = ({
 
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 lg:hidden"
@@ -55,12 +54,10 @@ const Sidebar = ({
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`sidebar ${isOpen ? 'open' : ''}`}
         style={{ zIndex: 50 }}
       >
-        {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-slate-800/50">
           <div className="flex items-center gap-2">
             <div
@@ -90,7 +87,6 @@ const Sidebar = ({
           </button>
         </div>
 
-        {/* New Chat Button */}
         <div className="p-3">
           <button
             onClick={() => { onNewChat(); onClose(); }}
@@ -106,7 +102,6 @@ const Sidebar = ({
           </button>
         </div>
 
-        {/* Navigation */}
         <div className="px-3 space-y-0.5 mb-3">
           {[
             { id: 'chats', icon: <MessageSquare size={16} />, label: 'Recent Chats', count: conversations.length },
@@ -133,7 +128,6 @@ const Sidebar = ({
           ))}
         </div>
 
-        {/* Content Section */}
         <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1">
           {activeSection === 'chats' && (
             <div className="space-y-1">
@@ -240,7 +234,6 @@ const Sidebar = ({
           )}
         </div>
 
-        {/* Bottom Settings */}
         <div className="p-3 border-t border-slate-800/50">
           <button className="sidebar-item w-full">
             <Settings size={16} />
@@ -280,7 +273,6 @@ const ConversationItem = ({ conv, isActive, isHovered, onHover, onSelect, onFavo
         <p className="text-xs text-slate-600 truncate">{formatTimestamp(conv.timestamp)}</p>
       </div>
 
-      {/* Action buttons on hover */}
       {isHovered && (
         <div className="flex items-center gap-1 animate-fade-in absolute right-2 bg-inherit pl-2">
           <button

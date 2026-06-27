@@ -8,7 +8,7 @@ const SkeletonLine = ({ width = '100%', height = '14px', delay = 0 }) => {
       style={{
         width,
         height,
-        animationDelay: `${delay}ms`, // Switched to ms for project-wide consistency
+        animationDelay: `${delay}ms`,
       }}
     />
   );
@@ -23,7 +23,7 @@ const SkeletonCard = ({ modelName, modelIcon, modelColor }) => {
         boxShadow: modelColor ? `0 0 20px ${modelColor}10` : 'none',
       }}
     >
-      {/* Header */}
+
       <div 
         className="px-5 py-3 border-b flex items-center gap-2"
         style={{ 
@@ -37,7 +37,7 @@ const SkeletonCard = ({ modelName, modelIcon, modelColor }) => {
         <span className="text-sm font-medium text-slate-300">{modelName}</span>
       </div>
 
-      {/* Content */}
+ 
       <div className="px-5 py-4 space-y-3">
         <SkeletonLine height="18px" delay={0} />
         <SkeletonLine width="92%" delay={75} />
@@ -58,7 +58,7 @@ const LoadingState = ({
 }) => {
   return (
     <div className="space-y-6">
-      {/* Header Status */}
+
       <div className="flex flex-col items-center justify-center gap-2 text-center">
         <div className="flex items-center gap-2 text-slate-400 font-medium">
           <Sparkles size={16} className="text-amber-400 animate-pulse" />
@@ -71,7 +71,6 @@ const LoadingState = ({
         </div>
       </div>
 
-      {/* Cards Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SkeletonCard
           modelName={model1Name}

@@ -6,7 +6,6 @@ const app = express()
 app.use(express.json());
 app.use(cors())
 
-// CORS middleware — allow the Vite dev server to call this API
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -36,7 +35,7 @@ app.post("/use-graph", async (req, res) => {
 
     const result = await useGraph(message);
     
-    // ✅ Return the full result directly
+   
     res.json(result);
 
   } catch (err) {

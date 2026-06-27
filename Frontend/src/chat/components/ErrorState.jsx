@@ -11,7 +11,7 @@ const ErrorState = ({ message, onRetry, onGoBack }) => {
           boxShadow: '0 0 40px rgba(239, 68, 68, 0.08)',
         }}
       >
-        {/* Error Icon */}
+     
         <div className="flex items-center justify-center mb-6">
           <div
             className="w-20 h-20 rounded-2xl flex items-center justify-center animate-bounce-in"
@@ -24,7 +24,6 @@ const ErrorState = ({ message, onRetry, onGoBack }) => {
           </div>
         </div>
 
-        {/* Error Text */}
         <h3 className="text-xl font-bold text-slate-100 mb-2">
           Something went wrong
         </h3>
@@ -38,7 +37,6 @@ const ErrorState = ({ message, onRetry, onGoBack }) => {
           <span>Check your connection and try again</span>
         </div>
 
-        {/* Error Details */}
         <div
           className="flex items-start gap-3 p-3 rounded-xl mb-6 text-left"
           style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)' }}
@@ -49,7 +47,6 @@ const ErrorState = ({ message, onRetry, onGoBack }) => {
           </p>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex gap-3">
           <button
             onClick={onGoBack}

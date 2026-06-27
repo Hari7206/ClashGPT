@@ -51,7 +51,7 @@ const AIResponseCard = ({
           boxShadow: `0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px ${modelColor}15`,
         }}
       >
-        {/* Card Header */}
+      
         <div
           className="flex items-center justify-between px-5 py-3.5"
           style={{
@@ -60,7 +60,7 @@ const AIResponseCard = ({
           }}
         >
           <div className="flex items-center gap-3">
-            {/* Model Avatar */}
+      
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
               style={{
@@ -88,7 +88,6 @@ const AIResponseCard = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-1.5">
             <button
               onClick={handleCopy}
@@ -121,7 +120,7 @@ const AIResponseCard = ({
           </div>
         </div>
 
-        {/* Card Content */}
+    
         <div
           className="px-5 py-4 overflow-y-auto transition-all duration-300"
           style={{
@@ -131,7 +130,6 @@ const AIResponseCard = ({
           <MarkdownRenderer content={safeContent} />
         </div>
 
-        {/* Card Footer */}
         <div
           className="flex items-center justify-between px-5 py-3 border-t"
           style={{ borderColor: `${modelColor}15` }}
@@ -159,7 +157,6 @@ const AIResponseCard = ({
         </div>
       </div>
 
-      {/* Expanded modal overlay */}
       {expanded && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4"

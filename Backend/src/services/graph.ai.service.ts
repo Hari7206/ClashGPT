@@ -14,7 +14,6 @@ import {
 
 import { createAgent } from "langchain";
 
-// Define state with proper typing
 interface GraphState {
   userMessage: string;
   solution_1?: string;
@@ -25,7 +24,6 @@ interface GraphState {
   };
 }
 
-// Solution Node - Get responses from both models
 const solutionNode = async (state: GraphState) => {
   console.log("📝 Getting solutions for:", state.userMessage);
   
@@ -39,8 +37,6 @@ const solutionNode = async (state: GraphState) => {
     solution_2: cohere_solution.content,
   };
 };
-
-// Judge Node - Evaluate both solutions
 const judgeNode = async (state: GraphState) => {
   console.log("⚖️ Judging solutions...");
   console.log("Solution 1:", state.solution_1);
@@ -97,7 +93,6 @@ Return ONLY valid JSON:
   };
 };
 
-// Build the graph - SIMPLIFIED
 const graph = new StateGraph({
   channels: {
     userMessage: {
@@ -125,7 +120,7 @@ const graph = new StateGraph({
   .addEdge("judge", END)
   .compile();
 
-// Main export
+
 export default async function (userMessage: string) {
   console.log("🚀 Starting graph with message:", userMessage);
   
@@ -133,9 +128,7 @@ export default async function (userMessage: string) {
     userMessage: userMessage,
   });
 
-  console.log("✅ Full result:", result);
-
-  // Return the complete response
+  
   return {
     solution_1: result.solution_1 || "",
     solution_2: result.solution_2 || "",

@@ -53,7 +53,7 @@ const DevModePanel = ({ data = {} }) => {
         border: '1px solid #1e293b',
       }}
     >
-      {/* Toggle Header */}
+  
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between px-5 py-4 transition-colors hover:bg-slate-800/30"
@@ -85,10 +85,10 @@ const DevModePanel = ({ data = {} }) => {
         </div>
       </button>
 
-      {/* Content */}
+    
       {isOpen && (
         <div className="border-t border-slate-800 animate-fade-in">
-          {/* Tabs */}
+    
           <div className="flex gap-1 px-4 pt-3 pb-2 overflow-x-auto">
             {tabs.map((tab) => (
               <button
@@ -107,7 +107,6 @@ const DevModePanel = ({ data = {} }) => {
             ))}
           </div>
 
-          {/* Code Viewer */}
           <div className="px-4 pb-4">
             <SyntaxHighlighter
               language={getLanguage()}
