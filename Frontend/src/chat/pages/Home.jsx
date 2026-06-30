@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+// chat/pages/Home.jsx
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import AIResponseCard from "../components/AIResponseCard";
@@ -10,11 +12,35 @@ import WelcomeScreen from "../components/WelcomeScreen";
 import { useChat } from "../hooks/useChat";
 
 function Home() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { messages, isLoading, error, sendMessage } = useChat();
 
-
-
+  // ✅ Handle Google OAuth callback
+  useEffect(() => {
+    const token = searchParams.get('token');
+    const userParam = searchParams.get('user');
+    
+    if (token) {
+      // Save token to localStorage
+      localStorage.setItem('token', token);
+      
+      // If user data is also passed
+      if (userParam) {
+        try {
+          const user = JSON.parse(decodeURIComponent(userParam));
+          localStorage.setItem('user', JSON.stringify(user));
+          console.log("✅ Google login successful:", user);
+        } catch (e) {
+          console.error('Failed to parse user data', e);
+        }
+      }
+      
+      // Clean URL (remove token from URL)
+      navigate('/', { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   messages.forEach((msg, index) => {
     console.log(`📝 Message ${index}:`, {
@@ -28,28 +54,23 @@ function Home() {
 
   return (
     <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
-
-  
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
       <div className="flex flex-col flex-1">
-
         <Navbar
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onNewChat={() => {}}
         />
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
           {messages.length === 0 && !isLoading && (
             <WelcomeScreen onSelectPrompt={sendMessage} />
           )}
 
           {messages.map((msg, i) => (
             <div key={i}>
-        
               {msg.type === "user" ? (
                 <div className="flex justify-end">
                   <div className="max-w-3xl bg-slate-800/80 rounded-2xl px-5 py-3 text-slate-200">
@@ -58,7 +79,6 @@ function Home() {
                 </div>
               ) : (
                 <>
-
                   {msg.solution_1 && (
                     <AIResponseCard
                       modelName="Mistral AI"
@@ -98,21 +118,21 @@ function Home() {
             </div>
           ))}
 
-          {isLoading && <LoadingState 
-            model1Name="Mistral"
-            model1Icon="🧠"
-            model1Color="#22d3ee"
-            model2Name="Cohere"
-            model2Icon="⚡"
-            model2Color="#a78bfa"
-          />}
+          {isLoading && (
+            <LoadingState 
+              model1Name="Mistral"
+              model1Icon="🧠"
+              model1Color="#22d3ee"
+              model2Name="Cohere"
+              model2Icon="⚡"
+              model2Color="#a78bfa"
+            />
+          )}
 
           {error && <ErrorState message={error} onRetry={() => {}} />}
-
         </div>
 
         <PromptInput onSubmit={sendMessage} isLoading={isLoading} />
-
       </div>
     </div>
   );

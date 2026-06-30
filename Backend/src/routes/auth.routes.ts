@@ -1,8 +1,8 @@
+// backend/routes/auth.routes.js
 import express from "express";
 import { registerUser, loginUser, verifyEmail } from "../controllers/auth.controller.js";
 import passport from "../config/passport.js";
 import { generateToken } from "../utils/jwt.js";
-
 
 const router = express.Router();
 
@@ -19,25 +19,35 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    const user = req.user as any;
+    try {
+      const user = req.user;
+      
+      if (!user) {
+        return res.redirect(`${process.env.CLIENT_URL}/login?error=authentication_failed`);
+      }
 
-    const token = generateToken(user._id.toString());
+      const token = generateToken(user._id.toString());
 
-    return res.json({
-      success: true,
-      message: "Google login successful",
-      data: {
-        user: {
+      // Encode user data for URL
+      const userData = encodeURIComponent(
+        JSON.stringify({
           id: user._id,
           username: user.username,
           email: user.email,
-        },
-        token,
-      },
-    });
+        })
+      );
+
+      // ✅ Redirect to home page with token
+      const redirectUrl = `${process.env.CLIENT_URL}/?token=${token}&user=${userData}`;
+      
+      console.log("🔄 Redirecting to home:", redirectUrl);
+      
+      res.redirect(redirectUrl);
+    } catch (error) {
+      console.error("❌ Google callback error:", error);
+      res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
+    }
   }
 );
-
-
 
 export default router;
