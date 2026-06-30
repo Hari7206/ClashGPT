@@ -1,18 +1,15 @@
+// backend/services/graph.ai.service.js
 import { HumanMessage } from "@langchain/core/messages";
 import {
   StateGraph,
   END,
   START,
 } from "@langchain/langgraph";
-import { z } from "zod";
-
 import {
   mistralModel,
   cohereModel,
   groqModel,
 } from "./model.service.js";
-
-import { createAgent } from "langchain";
 
 interface GraphState {
   userMessage: string;
@@ -27,72 +24,136 @@ interface GraphState {
 const solutionNode = async (state: GraphState) => {
   console.log("📝 Getting solutions for:", state.userMessage);
   
-  const [mistral_solution, cohere_solution] = await Promise.all([
-    mistralModel.invoke(state.userMessage),
-    cohereModel.invoke(state.userMessage),
-  ]);
+  try {
+    // ✅ Make sure the message is not empty
+    if (!state.userMessage || state.userMessage.trim() === "") {
+      console.error("❌ Empty user message");
+      return {
+        solution_1: "Please provide a valid message.",
+        solution_2: "Please provide a valid message.",
+      };
+    }
 
-  return {
-    solution_1: mistral_solution.content,
-    solution_2: cohere_solution.content,
-  };
+    console.log("🔄 Calling Mistral AI...");
+    const mistralPromise = mistralModel.invoke(state.userMessage)
+      .then(response => {
+        console.log("✅ Mistral AI responded");
+        return response;
+      })
+      .catch(error => {
+        console.error("❌ Mistral AI error:", error.message);
+        return { content: "Mistral AI is currently unavailable. Please try again." };
+      });
+
+    console.log("🔄 Calling Cohere AI...");
+    const coherePromise = cohereModel.invoke(state.userMessage)
+      .then(response => {
+        console.log("✅ Cohere AI responded");
+        return response;
+      })
+      .catch(error => {
+        console.error("❌ Cohere AI error:", error.message);
+        return { content: "Cohere AI is currently unavailable. Please try again." };
+      });
+
+    const [mistral_solution, cohere_solution] = await Promise.all([
+      mistralPromise,
+      coherePromise,
+    ]);
+
+    const solution1 = mistral_solution?.content || "Mistral AI could not generate a response";
+    const solution2 = cohere_solution?.content || "Cohere AI could not generate a response";
+
+    console.log("📊 Solution 1 length:", solution1.length);
+    console.log("📊 Solution 2 length:", solution2.length);
+
+    return {
+      solution_1: solution1,
+      solution_2: solution2,
+    };
+  } catch (error) {
+    console.error("❌ Error in solutionNode:", error);
+    return {
+      solution_1: "An error occurred while generating the response.",
+      solution_2: "An error occurred while generating the response.",
+    };
+  }
 };
+
 const judgeNode = async (state: GraphState) => {
   console.log("⚖️ Judging solutions...");
-  console.log("Solution 1:", state.solution_1);
-  console.log("Solution 2:", state.solution_2);
+  
+  try {
+    const solution1 = state.solution_1 || "No response provided";
+    const solution2 = state.solution_2 || "No response provided";
 
-  const judge = createAgent({
-    model: groqModel,
-    tools: [],
-  });
+    console.log("Solution 1 length:", solution1.length);
+    console.log("Solution 2 length:", solution2.length);
 
-  const judgeResponse = await judge.invoke({
-    messages: [
-      new HumanMessage(`
-You are a strict evaluator.
+    const judgePrompt = `You are a strict evaluator.
 
-Compare these two answers:
+Compare these two answers and score them from 0 to 10.
 
 Solution 1:
-${state.solution_1}
+${solution1.substring(0, 5000)}
 
 Solution 2:
-${state.solution_2}
+${solution2.substring(0, 5000)}
 
-Return ONLY valid JSON:
-{
-  "solution_1_score": 0,
-  "solution_2_score": 0
-}
-      `),
-    ],
-  });
+Return ONLY valid JSON in this exact format:
+{"solution_1_score": 8, "solution_2_score": 7}`;
 
-  const rawMessage = judgeResponse.messages?.at(-1);
-  const raw = typeof rawMessage?.content === "string" ? rawMessage.content : "";
+    console.log("🔄 Calling Groq for judging...");
+    
+    const judgeResponse = await groqModel.invoke([
+      new HumanMessage(judgePrompt),
+    ]);
 
-  console.log("RAW JUDGE OUTPUT:", raw);
+    const raw = typeof judgeResponse?.content === "string" ? judgeResponse.content : "";
+    console.log("📝 RAW JUDGE OUTPUT:", raw);
 
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  let result = { solution_1_score: 0, solution_2_score: 0 };
+    // Try to extract JSON from the response
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    let result = { solution_1_score: 5, solution_2_score: 5 };
 
-  if (jsonMatch) {
-    try {
-      let json = jsonMatch[0];
-      json = json.replace(/\/\/.*$/gm, "");
-      json = json.replace(/,\s*}/g, "}");
-      result = JSON.parse(json);
-    } catch (err) {
-      console.error("Failed to parse judge JSON:", err);
+    if (jsonMatch) {
+      try {
+        let json = jsonMatch[0];
+        // Clean up common issues
+        json = json.replace(/\/\/.*$/gm, "");
+        json = json.replace(/,\s*}/g, "}");
+        json = json.replace(/,\s*]/g, "]");
+        json = json.replace(/'/g, '"');
+        
+        const parsed = JSON.parse(json);
+        result = {
+          solution_1_score: Math.min(Math.max(parsed.solution_1_score || 0, 0), 10),
+          solution_2_score: Math.min(Math.max(parsed.solution_2_score || 0, 0), 10),
+        };
+        console.log("✅ Parsed judge scores:", result);
+      } catch (err) {
+        console.error("❌ Failed to parse judge JSON:", err);
+        console.error("Raw JSON attempt:", jsonMatch[0]);
+      }
+    } else {
+      console.warn("⚠️ No JSON found in judge response");
     }
-  }
 
-  return {
-    judge_recommendation: result,
-  };
+    return {
+      judge_recommendation: result,
+    };
+  } catch (error) {
+    console.error("❌ Error in judgeNode:", error);
+    return {
+      judge_recommendation: {
+        solution_1_score: 5,
+        solution_2_score: 5,
+      },
+    };
+  }
 };
 
+// Graph configuration
 const graph = new StateGraph({
   channels: {
     userMessage: {
@@ -120,21 +181,29 @@ const graph = new StateGraph({
   .addEdge("judge", END)
   .compile();
 
-
 export default async function (userMessage: string) {
   console.log("🚀 Starting graph with message:", userMessage);
   
-  const result = await graph.invoke({
-    userMessage: userMessage,
-  });
+  try {
+    const result = await graph.invoke({
+      userMessage: userMessage,
+    });
 
-  
-  return {
-    solution_1: result.solution_1 || "",
-    solution_2: result.solution_2 || "",
-    judge_recommendation: result.judge_recommendation || {
-      solution_1_score: 0,
-      solution_2_score: 0,
-    },
-  };
+    console.log("✅ Graph execution complete");
+    console.log("📊 Solution 1 length:", result.solution_1?.length || 0);
+    console.log("📊 Solution 2 length:", result.solution_2?.length || 0);
+    console.log("📊 Judge:", result.judge_recommendation);
+
+    return {
+      solution_1: result.solution_1 || "",
+      solution_2: result.solution_2 || "",
+      judge_recommendation: result.judge_recommendation || {
+        solution_1_score: 0,
+        solution_2_score: 0,
+      },
+    };
+  } catch (error) {
+    console.error("❌ Graph execution error:", error);
+    throw error;
+  }
 }

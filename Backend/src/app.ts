@@ -1,5 +1,6 @@
+// backend/src/app.js
 import express from "express";
-import cookieParser from "cookie-parser"; // ✅ Add this import
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import session from "express-session";
 import passport from "./config/passport.js";
@@ -12,16 +13,19 @@ import errorMiddleware from "./middleware/error.middleware.js";
 
 const app = express();
 
-// ✅ THIS ORDER IS IMPORTANT - cookie-parser BEFORE routes
+// ✅ Use environment variable for CORS
+const allowedOrigins = process.env.CLIENT_URL || 'http://localhost:5173';
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); // ✅ Add this BEFORE your routes
-
-// ✅ Update CORS for cookies
-app.use(cors({
-  origin: 'http://localhost:3000', // Your frontend URL
-  credentials: true, // ✅ Allow cookies
-}));
+app.use(cookieParser());
 
 app.use(
   session({
@@ -43,7 +47,7 @@ app.use(passport.session());
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 
-// ✅ Debug middleware to check cookies
+// Debug middleware to check cookies
 app.use((req, res, next) => {
   console.log('🔍 All Cookies:', req.cookies);
   console.log('🔍 Token Cookie:', req.cookies?.token);

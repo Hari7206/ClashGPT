@@ -1,9 +1,11 @@
+// chat/components/MarkdownRenderer.jsx
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const CodeBlock = ({ language, value }) => {
   const [copied, setCopied] = useState(false);
@@ -26,9 +28,9 @@ const CodeBlock = ({ language, value }) => {
           <span
             className="text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{
-              background: 'rgba(34, 211, 238, 0.1)',
-              color: '#22d3ee',
-              border: '1px solid rgba(34,211,238,0.2)',
+              background: 'rgba(59, 130, 246, 0.1)',
+              color: '#3b82f6',
+              border: '1px solid rgba(59,130,246,0.2)',
               fontFamily: 'JetBrains Mono, monospace',
             }}
           >
@@ -75,8 +77,17 @@ const CodeBlock = ({ language, value }) => {
 };
 
 const MarkdownRenderer = ({ content = '' }) => {
+  const { isDark } = useTheme();
+  
+  // Text colors based on theme
+  const textColor = isDark ? '#e5e7eb' : '#1f2937';
+  const headingColor = isDark ? '#f1f5f9' : '#111827';
+  const mutedColor = isDark ? '#94a3b8' : '#4b5563';
+  const borderColor = isDark ? '#334155' : '#e5e7eb';
+  const codeBg = isDark ? 'rgba(51, 65, 85, 0.8)' : 'rgba(243, 244, 246, 0.9)';
+
   return (
-    <div className="markdown-body">
+    <div className="markdown-body" style={{ color: textColor }}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -96,11 +107,11 @@ const MarkdownRenderer = ({ content = '' }) => {
                 style={{
                   fontFamily: 'JetBrains Mono, monospace',
                   fontSize: '0.85em',
-                  background: 'rgba(51, 65, 85, 0.8)',
-                  color: '#22d3ee',
+                  background: codeBg,
+                  color: isDark ? '#22d3ee' : '#2563eb',
                   padding: '0.15em 0.4em',
                   borderRadius: '4px',
-                  border: '1px solid rgba(71, 85, 105, 0.5)',
+                  border: `1px solid ${borderColor}`,
                 }}
               >
                 {children}
@@ -111,11 +122,11 @@ const MarkdownRenderer = ({ content = '' }) => {
             <h1 style={{
               fontSize: '1.5rem',
               fontWeight: 700,
-              color: '#f1f5f9',
+              color: headingColor,
               marginTop: '1.5rem',
               marginBottom: '0.75rem',
               paddingBottom: '0.5rem',
-              borderBottom: '1px solid #334155',
+              borderBottom: `1px solid ${borderColor}`,
               lineHeight: '1.3',
             }}>
               {children}
@@ -125,7 +136,7 @@ const MarkdownRenderer = ({ content = '' }) => {
             <h2 style={{
               fontSize: '1.2rem',
               fontWeight: 600,
-              color: '#e2e8f0',
+              color: headingColor,
               marginTop: '1.25rem',
               marginBottom: '0.5rem',
               lineHeight: '1.4',
@@ -137,7 +148,7 @@ const MarkdownRenderer = ({ content = '' }) => {
             <h3 style={{
               fontSize: '1.05rem',
               fontWeight: 600,
-              color: '#cbd5e1',
+              color: headingColor,
               marginTop: '1rem',
               marginBottom: '0.4rem',
               lineHeight: '1.4',
@@ -146,33 +157,51 @@ const MarkdownRenderer = ({ content = '' }) => {
             </h3>
           ),
           p: ({ children }) => (
-            <p style={{ marginBottom: '0.75rem', lineHeight: '1.7', color: '#cbd5e1' }}>
+            <p style={{ 
+              marginBottom: '0.75rem', 
+              lineHeight: '1.7', 
+              color: textColor 
+            }}>
               {children}
             </p>
           ),
           ul: ({ children }) => (
-            <ul style={{ listStyleType: 'disc', paddingLeft: '1.5rem', marginBottom: '0.75rem' }}>
+            <ul style={{ 
+              listStyleType: 'disc', 
+              paddingLeft: '1.5rem', 
+              marginBottom: '0.75rem',
+              color: textColor,
+            }}>
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol style={{ listStyleType: 'decimal', paddingLeft: '1.5rem', marginBottom: '0.75rem' }}>
+            <ol style={{ 
+              listStyleType: 'decimal', 
+              paddingLeft: '1.5rem', 
+              marginBottom: '0.75rem',
+              color: textColor,
+            }}>
               {children}
             </ol>
           ),
           li: ({ children }) => (
-            <li style={{ marginBottom: '0.25rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+            <li style={{ 
+              marginBottom: '0.25rem', 
+              color: textColor, 
+              lineHeight: '1.6' 
+            }}>
               {children}
             </li>
           ),
           blockquote: ({ children }) => (
             <blockquote style={{
-              borderLeft: '3px solid #22d3ee',
+              borderLeft: `3px solid ${isDark ? '#3b82f6' : '#3b82f6'}`,
               padding: '0.5rem 1rem',
               margin: '0.75rem 0',
-              background: 'rgba(34, 211, 238, 0.05)',
+              background: isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.05)',
               borderRadius: '0 8px 8px 0',
-              color: '#94a3b8',
+              color: mutedColor,
               fontStyle: 'italic',
             }}>
               {children}
@@ -182,25 +211,30 @@ const MarkdownRenderer = ({ content = '' }) => {
             <hr style={{
               border: 'none',
               height: '1px',
-              background: 'linear-gradient(90deg, transparent, #334155, transparent)',
+              background: `linear-gradient(90deg, transparent, ${borderColor}, transparent)`,
               margin: '1.5rem 0',
             }} />
           ),
           table: ({ children }) => (
             <div style={{ overflowX: 'auto', margin: '0.75rem 0' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+              <table style={{ 
+                width: '100%', 
+                borderCollapse: 'collapse', 
+                fontSize: '0.9rem',
+                color: textColor,
+              }}>
                 {children}
               </table>
             </div>
           ),
           th: ({ children }) => (
             <th style={{
-              background: 'rgba(34, 211, 238, 0.1)',
-              color: '#22d3ee',
+              background: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)',
+              color: isDark ? '#3b82f6' : '#2563eb',
               fontWeight: 600,
               padding: '0.6rem 0.75rem',
               textAlign: 'left',
-              border: '1px solid #334155',
+              border: `1px solid ${borderColor}`,
             }}>
               {children}
             </th>
@@ -208,8 +242,8 @@ const MarkdownRenderer = ({ content = '' }) => {
           td: ({ children }) => (
             <td style={{
               padding: '0.5rem 0.75rem',
-              border: '1px solid #1e293b',
-              color: '#cbd5e1',
+              border: `1px solid ${borderColor}`,
+              color: textColor,
             }}>
               {children}
             </td>
@@ -219,16 +253,26 @@ const MarkdownRenderer = ({ content = '' }) => {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: '#22d3ee', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+              style={{ 
+                color: isDark ? '#3b82f6' : '#2563eb', 
+                textDecoration: 'underline', 
+                textUnderlineOffset: '2px' 
+              }}
             >
               {children}
             </a>
           ),
           strong: ({ children }) => (
-            <strong style={{ fontWeight: 700, color: '#f1f5f9' }}>{children}</strong>
+            <strong style={{ 
+              fontWeight: 700, 
+              color: headingColor 
+            }}>{children}</strong>
           ),
           em: ({ children }) => (
-            <em style={{ fontStyle: 'italic', color: '#94a3b8' }}>{children}</em>
+            <em style={{ 
+              fontStyle: 'italic', 
+              color: mutedColor 
+            }}>{children}</em>
           ),
           img: ({ src, alt }) => (
             <img

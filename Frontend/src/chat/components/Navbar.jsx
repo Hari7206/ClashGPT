@@ -1,24 +1,69 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Menu, 
   Zap, 
   PlusCircle, 
-  Search, 
   Bell, 
-  Sun, 
-  Moon, 
   ChevronDown, 
   User, 
   Settings, 
   HelpCircle, 
-  LogOut 
+  LogOut,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { useTheme } from '../context/ThemeContext';
 
 const Navbar = ({ onToggleSidebar, onNewChat }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [isDark, setIsDark] = useState(true);
+  
+  const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUserData(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Failed to parse user data', e);
+      }
+    }
+  }, []);
+
+  const currentUser = user || userData;
+
+  const getInitial = () => {
+    if (currentUser?.username) {
+      return currentUser.username.charAt(0).toUpperCase();
+    }
+    if (currentUser?.email) {
+      return currentUser.email.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
+
+  const getDisplayName = () => {
+    if (currentUser?.username) {
+      return currentUser.username;
+    }
+    if (currentUser?.email) {
+      return currentUser.email.split('@')[0];
+    }
+    return 'User';
+  };
+
+  const getDisplayEmail = () => {
+    if (currentUser?.email) {
+      return currentUser.email;
+    }
+    return 'user@clashgpt.ai';
+  };
 
   const notifications = [
     { id: 1, text: 'Your comparison is ready!', time: '2m ago', unread: true },
@@ -26,35 +71,40 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
     { id: 3, text: 'Weekly digest available', time: '1d ago', unread: false },
   ];
 
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/login';
+  };
+
+  const textColor = isDark ? 'text-gray-300' : 'text-gray-700';
+  const borderColor = isDark ? 'border-[#2a2a2a]' : 'border-gray-200';
+  const hoverBg = isDark ? 'hover:bg-[#2a2a2a]' : 'hover:bg-gray-100';
+  const dropdownBg = isDark ? 'bg-[#1a1a1a]' : 'bg-white';
+  const dropdownBorder = isDark ? 'border-[#2a2a2a]' : 'border-gray-200';
+
   return (
-    <nav
-      className="glass sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-slate-800/50"
-      style={{ backdropFilter: 'blur(20px)' }}
-    >
-      
+    <nav className={`flex items-center justify-between px-4 py-3 border-b ${borderColor} bg-transparent`}>
+      {/* Left side */}
       <div className="flex items-center gap-3">
         <button
           onClick={onToggleSidebar}
-          className="btn-icon p-2 lg:hidden"
+          className={`p-2 rounded-lg ${hoverBg} transition-colors`}
           aria-label="Toggle sidebar"
         >
-          <Menu size={18} />
+          <Menu size={18} className="text-blue-400" />
         </button>
 
         <div className="flex items-center gap-2.5">
           <div
-            className="flex items-center justify-center w-8 h-8 rounded-xl animate-float"
-            style={{
-              background: 'linear-gradient(135deg, #22d3ee, #8b5cf6)',
-              boxShadow: '0 0 16px rgba(34, 211, 238, 0.4)',
-            }}
+            className="flex items-center justify-center w-8 h-8 rounded-xl"
+            style={{ background: 'linear-gradient(135deg, #3b82f6, #60a5fa)' }}
           >
             <Zap size={16} fill="white" color="white" />
           </div>
-          <span
-            className="font-bold text-lg tracking-tight"
-            style={{
-              background: 'linear-gradient(135deg, #22d3ee, #a78bfa)',
+          <span 
+            className="font-bold text-lg"
+            style={{ 
+              background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -65,62 +115,65 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
         </div>
       </div>
 
-      <button
-        onClick={onNewChat}
-        className="btn-primary hidden sm:flex items-center gap-2 px-4 py-2 text-sm"
-        style={{
-          background: 'linear-gradient(135deg, rgba(34,211,238,0.15), rgba(139,92,246,0.15))',
-          border: '1px solid rgba(34,211,238,0.3)',
-          color: '#22d3ee',
-        }}
-      >
-        <PlusCircle size={16} />
-        <span>New Chat</span>
-      </button>
-
+      {/* Right side */}
       <div className="flex items-center gap-1.5">
-     
-        <button className="btn-icon p-2" aria-label="Search">
-          <Search size={17} />
+        <button
+          onClick={onNewChat}
+          className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors text-white`}
+          style={{
+            background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+          }}
+        >
+          <PlusCircle size={16} className="text-white" />
+          <span>New Chat</span>
         </button>
 
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className={`p-2 rounded-lg ${hoverBg} transition-colors`}
+          aria-label="Toggle theme"
+        >
+          {isDark ? <Sun size={17} className="text-blue-400" /> : <Moon size={17} className="text-blue-500" />}
+        </button>
+
+        {/* Notifications Dropdown */}
         <div className="relative">
           <button
-            className="btn-icon p-2 relative"
+            className={`p-2 rounded-lg ${hoverBg} transition-colors relative`}
             onClick={() => {
               setShowNotifications(!showNotifications);
               setShowUserMenu(false);
             }}
             aria-label="Notifications"
           >
-            <Bell size={17} />
+            <Bell size={17} className="text-blue-400" />
             <span
-              className="absolute top-1 right-1 w-2 h-2 rounded-full"
+              className="absolute top-2 right-2 w-2 h-2 rounded-full"
               style={{ background: '#ef4444' }}
             />
           </button>
 
           {showNotifications && (
             <div
-              className="glass-card absolute right-0 top-12 w-80 rounded-2xl p-2 animate-scale-in z-50"
-              style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}
+              className={`absolute right-0 top-12 w-80 rounded-xl p-2 z-50 ${dropdownBg} border ${dropdownBorder} shadow-xl`}
             >
-              <div className="flex items-center justify-between px-3 py-2 mb-1">
-                <span className="text-sm font-semibold text-slate-200">Notifications</span>
-                <button className="text-xs text-cyan-400 hover:text-cyan-300">Mark all read</button>
+              <div className={`flex items-center justify-between px-3 py-2 mb-1 border-b ${borderColor}`}>
+                <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Notifications</span>
+                <button className="text-xs text-blue-400 hover:text-blue-300">Mark all read</button>
               </div>
               {notifications.map((n) => (
                 <div
                   key={n.id}
-                  className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/50 cursor-pointer transition-colors"
+                  className={`flex items-start gap-3 px-3 py-2.5 rounded-lg ${hoverBg} cursor-pointer transition-colors`}
                 >
                   <div
                     className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
-                    style={{ background: n.unread ? '#22d3ee' : '#334155' }}
+                    style={{ background: n.unread ? '#3b82f6' : '#2a2a2a' }}
                   />
                   <div>
-                    <p className="text-xs text-slate-300 leading-relaxed">{n.text}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{n.time}</p>
+                    <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-700'} leading-relaxed`}>{n.text}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{n.time}</p>
                   </div>
                 </div>
               ))}
@@ -128,58 +181,71 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
           )}
         </div>
 
-        <button
-          className="btn-icon p-2"
-          onClick={() => setIsDark(!isDark)}
-          aria-label="Toggle theme"
-        >
-          {isDark ? <Sun size={17} /> : <Moon size={17} />}
-        </button>
-
+        {/* User Account Dropdown */}
         <div className="relative">
           <button
-            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-800/60 transition-colors"
+            className={`flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg ${hoverBg} transition-colors`}
             onClick={() => {
               setShowUserMenu(!showUserMenu);
               setShowNotifications(false);
             }}
           >
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-white"
               style={{
-                background: 'linear-gradient(135deg, #22d3ee, #8b5cf6)',
-                color: 'white',
+                background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
               }}
             >
-              U
+              {getInitial()}
             </div>
-            <ChevronDown size={14} className="text-slate-400 hidden sm:block" />
+            <ChevronDown size={14} className="text-blue-400 hidden sm:block" />
           </button>
 
           {showUserMenu && (
             <div
-              className="glass-card absolute right-0 top-12 w-52 rounded-2xl p-2 animate-scale-in z-50"
-              style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}
+              className={`absolute right-0 top-12 w-52 rounded-xl p-2 z-50 ${dropdownBg} border ${dropdownBorder} shadow-xl`}
             >
-              <div className="px-3 py-2 mb-1 border-b border-slate-800">
-                <p className="text-sm font-semibold text-slate-200">User</p>
-                <p className="text-xs text-slate-400">user@clashgpt.ai</p>
+              <div className={`px-3 py-2 mb-1 border-b ${borderColor}`}>
+                <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{getDisplayName()}</p>
+                <p className="text-xs text-gray-500 truncate">{getDisplayEmail()}</p>
               </div>
-              {[
-                { icon: <User size={15} />, label: 'Profile' },
-                { icon: <Settings size={15} />, label: 'Settings' },
-                { icon: <HelpCircle size={15} />, label: 'Help & Support' },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-800/50 text-slate-300 hover:text-slate-100 text-sm transition-colors"
+              
+              {/* Profile Link */}
+              <Link
+                to="/profile"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg ${hoverBg} ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} text-sm transition-colors`}
+                onClick={() => setShowUserMenu(false)}
+              >
+                <span className="text-blue-400"><User size={15} /></span>
+                Profile
+              </Link>
+              
+              {/* Settings Link */}
+              <Link
+                to="/settings"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg ${hoverBg} ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} text-sm transition-colors`}
+                onClick={() => setShowUserMenu(false)}
+              >
+                <span className="text-blue-400"><Settings size={15} /></span>
+                Settings
+              </Link>
+              
+              {/* Help & Support Link */}
+              <Link
+                to="/help-support"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg ${hoverBg} ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} text-sm transition-colors`}
+                onClick={() => setShowUserMenu(false)}
+              >
+                <span className="text-blue-400"><HelpCircle size={15} /></span>
+                Help & Support
+              </Link>
+
+              {/* Sign Out */}
+              <div className={`border-t ${borderColor} mt-1 pt-1`}>
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-500/10 text-red-400 text-sm transition-colors"
                 >
-                  {item.icon}
-                  {item.label}
-                </button>
-              ))}
-              <div className="border-t border-slate-800 mt-1 pt-1">
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-500/10 text-red-400 text-sm transition-colors">
                   <LogOut size={15} />
                   Sign out
                 </button>
@@ -189,6 +255,7 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
         </div>
       </div>
 
+      {/* Click Outside Overlay Backdrop */}
       {(showUserMenu || showNotifications) && (
         <div
           className="fixed inset-0 z-40"
@@ -203,3 +270,4 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
 };
 
 export default Navbar;
+

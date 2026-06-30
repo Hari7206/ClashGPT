@@ -1,60 +1,39 @@
-import useGraph from "./graph.ai.service.js";
+// backend/services/chat.service.js
+import graph from "./graph.ai.service.js";
 import ChatModel from "../models/Chat.model.js";
 import BattleModel from "../models/Battle.model.js";
 
-export const processAIBattle = async (
-  userId: string,
-  message: string,
-  chatId?: string
-) => {
-  // 1. Find or create chat
-  let chat;
+export const processAIBattle = async (userId: string, message: string, chatId: string) => {
+  try {
+    console.log("🔄 Processing AI battle for user:", userId);
+    console.log("💬 Message:", message);
+    console.log("📝 Chat ID:", chatId);
 
-  if (chatId) {
-    chat = await ChatModel.findOne({ _id: chatId, userId });
-  }
-
-  if (!chat) {
-    chat = await ChatModel.create({
-      userId,
-      title: message.slice(0, 25),
+    // Run the graph
+    const result = await graph(message);
+    
+    console.log("📊 Graph result:", {
+      solution_1_length: result.solution_1?.length || 0,
+      solution_2_length: result.solution_2?.length || 0,
+      solution_1_preview: result.solution_1?.substring(0, 100) || "empty",
+      solution_2_preview: result.solution_2?.substring(0, 100) || "empty",
+      judge: result.judge_recommendation,
     });
+
+    // Save battle to database if chatId exists
+    if (chatId) {
+      await BattleModel.create({
+        chatId,
+        userMessage: message,
+        solution_1: result.solution_1,
+        solution_2: result.solution_2,
+        judge_recommendation: result.judge_recommendation,
+      });
+    }
+
+    return result;
+  } catch (error) {
+    console.error("❌ Error in processAIBattle:", error);
+    throw error;
   }
-
-  // 2. Run AI graph
-  const result = await useGraph(message);
-
-  const { solution_1, solution_2, judge_recommendation } = result;
-
-  // 3. Decide winner
-  let winner: "solution_1" | "solution_2" | "draw" = "draw";
-
-  if (
-    judge_recommendation.solution_1_score >
-    judge_recommendation.solution_2_score
-  ) {
-    winner = "solution_1";
-  } else if (
-    judge_recommendation.solution_2_score >
-    judge_recommendation.solution_1_score
-  ) {
-    winner = "solution_2";
-  }
-
-  // 4. Save battle
-  const battle = await BattleModel.create({
-    chatId: chat._id,
-    userMessage: message,
-    solution_1,
-    solution_2,
-    solution_1_score: judge_recommendation.solution_1_score,
-    solution_2_score: judge_recommendation.solution_2_score,
-    winner,
-  });
-
-  return {
-    chat,
-    battle,
-    result,
-  };
 };
