@@ -25,11 +25,14 @@ function Home() {
     sendMessage,
     chats,
     currentChatId,
+    currentChatTitle,
     loadChat,
     createNewChat,
     deleteChatById,
     clearMessages,
     loadChats,
+    setCurrentChatId,
+    setCurrentChatTitle,
   } = useChat();
   
   const { user } = useAuth();
@@ -61,15 +64,17 @@ function Home() {
     loadChats();
   }, []);
 
-  const handleNewChat = async () => {
-    const newChat = await createNewChat();
-    if (newChat) {
-      clearMessages();
-    }
+  // Handle New Chat - Just clear messages, don't create chat yet
+  const handleNewChat = () => {
+    clearMessages();
+    setCurrentChatId(null);
+    setCurrentChatTitle(null);
+    setSidebarOpen(false);
   };
 
   const handleSelectConversation = (chat) => {
     loadChat(chat._id);
+    setSidebarOpen(false);
   };
 
   const handleRetry = () => {
@@ -96,6 +101,9 @@ function Home() {
   const textColor = isDark ? 'text-white' : 'text-gray-900';
   const cardBg = isDark ? 'bg-[#1a1a1a]' : 'bg-gray-50';
   const borderColor = isDark ? 'border-[#1a1a1a]' : 'border-gray-200';
+
+  // Debug log for current chat title
+  console.log("📌 Current Chat Title:", currentChatTitle);
 
   return (
     <div className={`flex h-screen ${bgColor} ${textColor} overflow-hidden`}>

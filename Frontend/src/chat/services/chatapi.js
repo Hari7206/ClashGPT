@@ -1,9 +1,11 @@
 // chat/services/chatapi.js
 import axios from "axios";
+
 const API = axios.create({
-  baseURL: "http://localhost:3000", // ✅ Make sure this matches your backend port
-  withCredentials: true, // ✅ Add this to send cookies
+  baseURL: "http://localhost:3000",
+  withCredentials: true,
 });
+
 // Add token to all requests
 API.interceptors.request.use(
   (config) => {

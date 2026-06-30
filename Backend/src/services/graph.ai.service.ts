@@ -1,4 +1,4 @@
-// backend/services/graph.ai.service.js
+// backend/services/graph.ai.service.ts
 import { HumanMessage } from "@langchain/core/messages";
 import {
   StateGraph,
@@ -25,7 +25,6 @@ const solutionNode = async (state: GraphState) => {
   console.log("📝 Getting solutions for:", state.userMessage);
   
   try {
-    // ✅ Make sure the message is not empty
     if (!state.userMessage || state.userMessage.trim() === "") {
       console.error("❌ Empty user message");
       return {
@@ -112,14 +111,12 @@ Return ONLY valid JSON in this exact format:
     const raw = typeof judgeResponse?.content === "string" ? judgeResponse.content : "";
     console.log("📝 RAW JUDGE OUTPUT:", raw);
 
-    // Try to extract JSON from the response
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     let result = { solution_1_score: 5, solution_2_score: 5 };
 
     if (jsonMatch) {
       try {
         let json = jsonMatch[0];
-        // Clean up common issues
         json = json.replace(/\/\/.*$/gm, "");
         json = json.replace(/,\s*}/g, "}");
         json = json.replace(/,\s*]/g, "]");
@@ -153,7 +150,6 @@ Return ONLY valid JSON in this exact format:
   }
 };
 
-// Graph configuration
 const graph = new StateGraph({
   channels: {
     userMessage: {
@@ -181,6 +177,7 @@ const graph = new StateGraph({
   .addEdge("judge", END)
   .compile();
 
+// ✅ ONLY ONE default export - the main graph function
 export default async function (userMessage: string) {
   console.log("🚀 Starting graph with message:", userMessage);
   
@@ -207,3 +204,39 @@ export default async function (userMessage: string) {
     throw error;
   }
 }
+
+// ✅ Named export - NOT default
+export const generateChatTitle = async (userMessage: string): Promise<string> => {
+  try {
+    console.log("📝 Generating chat title for:", userMessage.substring(0, 50) + "...");
+    
+    const titlePrompt = `Generate a short, concise title (maximum 5-6 words) for a conversation that starts with this user message: "${userMessage}"
+
+The title should be:
+- Short and descriptive (max 5-6 words)
+- Capture the main topic or question
+- No quotes, no explanation, just the title
+
+Example:
+User: "What is the best way to learn machine learning?"
+Title: Best Way to Learn ML
+
+User: "Explain quantum computing in simple terms"
+Title: Quantum Computing Explained
+
+Now generate the title for this message: "${userMessage}"`;
+
+    const response = await groqModel.invoke([
+      new HumanMessage(titlePrompt),
+    ]);
+
+    const title = typeof response?.content === "string" ? response.content.trim() : "New Chat";
+    
+    console.log("✅ Generated title:", title);
+    
+    return title;
+  } catch (error) {
+    console.error("❌ Error generating chat title:", error);
+    return "New Chat";
+  }
+};

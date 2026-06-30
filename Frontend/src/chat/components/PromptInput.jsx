@@ -2,9 +2,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import {
   Send,
-  Paperclip,
-  Mic,
-  MicOff,
   Loader2,
   CornerDownLeft,
   Zap,
@@ -14,7 +11,6 @@ import { useTheme } from '../context/ThemeContext';
 const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
   const { isDark } = useTheme();
   const [value, setValue] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
   const textareaRef = useRef(null);
 
   useEffect(() => {
@@ -43,7 +39,6 @@ const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
 
   const canSubmit = value.trim().length > 0 && !isLoading;
 
-  // ✅ Light mode: white background with gray border
   const bgColor = isDark ? '#1a1a1a' : '#ffffff';
   const borderColor = canSubmit ? (isDark ? '#4a4a4a' : '#3b82f6') : (isDark ? '#2a2a2a' : '#e5e7eb');
   const textColor = isDark ? '#e5e7eb' : '#1f2937';
@@ -68,36 +63,13 @@ const PromptInput = ({ onSubmit, isLoading, placeholder }) => {
           placeholder={placeholder || "Ask anything — ClashGPT will compare AI models for you..."}
           disabled={isLoading}
           rows={1}
-          className="w-full bg-transparent border-none outline-none font-sans text-sm leading-6 px-5 pt-4 pb-2 resize-none max-h-[200px] overflow-y-auto"
+          className="w-full bg-transparent border-none outline-none font-sans text-sm leading-6 px-5 pt-4 pb-2 resize-none max-h-[200px] overflow-y-auto placeholder-gray-500"
           style={{ color: textColor }}
         />
 
         <div className="flex items-center justify-between px-3 pb-3">
           <div className="flex items-center gap-1">
-            <button
-              className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-[#2a2a2a]' : 'hover:bg-gray-100'}`}
-              title="Attach file"
-              aria-label="Attach file"
-              disabled={isLoading}
-            >
-              <Paperclip size={16} className={isDark ? 'text-gray-500' : 'text-gray-400'} />
-            </button>
-
-            <button
-              className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-[#2a2a2a]' : 'hover:bg-gray-100'}`}
-              onClick={() => setIsRecording(!isRecording)}
-              title={isRecording ? 'Stop recording' : 'Voice input'}
-              aria-label={isRecording ? 'Stop recording' : 'Voice input'}
-              disabled={isLoading}
-              style={{
-                color: isRecording ? '#ef4444' : (isDark ? '#6b7280' : '#9ca3af'),
-                background: isRecording ? 'rgba(239, 68, 68, 0.1)' : undefined,
-              }}
-            >
-              {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
-            </button>
-
-            <span className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-400'} ml-2 hidden sm:flex items-center gap-1`}>
+            <span className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-400'} hidden sm:flex items-center gap-1`}>
               <CornerDownLeft size={11} />
               Send · Shift+Enter for new line
             </span>

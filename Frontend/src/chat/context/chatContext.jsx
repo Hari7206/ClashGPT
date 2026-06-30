@@ -15,18 +15,15 @@ export const ChatProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // Chat list state
   const [chats, setChats] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
+  const [currentChatTitle, setCurrentChatTitle] = useState(null);
   const [isLoadingChats, setIsLoadingChats] = useState(false);
 
-  // Load all chats on mount
   useEffect(() => {
     loadChats();
   }, []);
 
-  // Load all chats
   const loadChats = async () => {
     try {
       setIsLoadingChats(true);
@@ -42,21 +39,30 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  // Load specific chat with battles
+  // ✅ FIXED: Load chat with correct battle schema
   const loadChat = async (chatId) => {
     try {
       setIsLoading(true);
       const response = await getChatById(chatId);
       
+      console.log("📖 Full Chat Response:", response);
+      
       if (response.success) {
         const { chat, battles } = response.data;
-        setCurrentChatId(chatId);
+        console.log("📊 Battles received:", battles.length);
         
-        // Convert battles to messages format
+        setCurrentChatId(chatId);
+        setCurrentChatTitle(chat.title);
+        
         const chatMessages = [];
         
-        // Add user messages and AI responses from battles
         battles.forEach((battle) => {
+          console.log("🔍 Battle scores:", {
+            solution_1_score: battle.solution_1_score,
+            solution_2_score: battle.solution_2_score,
+            winner: battle.winner,
+          });
+          
           // User message
           if (battle.userMessage) {
             chatMessages.push({
@@ -67,7 +73,7 @@ export const ChatProvider = ({ children }) => {
             });
           }
           
-          // AI responses (solution_1 and solution_2)
+          // ✅ AI response with scores from direct fields
           if (battle.solution_1 || battle.solution_2) {
             chatMessages.push({
               id: `ai-${battle._id}`,
@@ -75,14 +81,15 @@ export const ChatProvider = ({ children }) => {
               solution_1: battle.solution_1 || "No response from Mistral",
               solution_2: battle.solution_2 || "No response from Cohere",
               judge_recommendation: {
-                solution_1_score: battle.judge_recommendation?.solution_1_score || 0,
-                solution_2_score: battle.judge_recommendation?.solution_2_score || 0,
+                solution_1_score: battle.solution_1_score ?? 0,
+                solution_2_score: battle.solution_2_score ?? 0,
               },
               timestamp: battle.createdAt,
             });
           }
         });
         
+        console.log("📨 Messages with scores:", chatMessages);
         setMessages(chatMessages);
       }
     } catch (err) {
@@ -93,7 +100,6 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  // Create new chat
   const createNewChat = async (title = "New Chat") => {
     try {
       const response = await createChat(title);
@@ -101,7 +107,8 @@ export const ChatProvider = ({ children }) => {
         const newChat = response.data;
         setChats([newChat, ...chats]);
         setCurrentChatId(newChat._id);
-        setMessages([]); // Clear messages for new chat
+        setCurrentChatTitle(newChat.title);
+        setMessages([]);
         return newChat;
       }
     } catch (err) {
@@ -111,7 +118,6 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  // Rename chat
   const renameChatTitle = async (chatId, title) => {
     try {
       const response = await renameChat(chatId, title);
@@ -119,6 +125,9 @@ export const ChatProvider = ({ children }) => {
         setChats(chats.map(chat => 
           chat._id === chatId ? { ...chat, title: title } : chat
         ));
+        if (currentChatId === chatId) {
+          setCurrentChatTitle(title);
+        }
         return true;
       }
     } catch (err) {
@@ -128,7 +137,6 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  // Delete chat
   const deleteChatById = async (chatId) => {
     try {
       const response = await deleteChat(chatId);
@@ -136,6 +144,7 @@ export const ChatProvider = ({ children }) => {
         setChats(chats.filter(chat => chat._id !== chatId));
         if (currentChatId === chatId) {
           setCurrentChatId(null);
+          setCurrentChatTitle(null);
           setMessages([]);
         }
         return true;
@@ -147,7 +156,7 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  // Send message to AI
+  // ✅ FIXED: Send message with correct score handling
   const sendMessage = async (prompt) => {
     if (!prompt.trim()) return;
 
@@ -163,36 +172,48 @@ export const ChatProvider = ({ children }) => {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      // If no chat exists, create one first
       let chatId = currentChatId;
-      if (!chatId) {
-        const newChat = await createNewChat("New Chat");
-        if (newChat) {
-          chatId = newChat._id;
-          setCurrentChatId(chatId);
-        }
-      }
 
       const data = await graphAPI(prompt, chatId);
       
       console.log("📦 API Response:", data);
 
+      if (data.data?.chat) {
+        const chatData = data.data.chat;
+        setCurrentChatId(chatData._id);
+        setCurrentChatTitle(chatData.title);
+        
+        setChats((prev) => {
+          const exists = prev.some(c => c._id === chatData._id);
+          if (exists) {
+            return prev.map(c => 
+              c._id === chatData._id ? { ...c, title: chatData.title } : c
+            );
+          } else {
+            return [chatData, ...prev];
+          }
+        });
+      }
+
+      // ✅ Get scores from response
+      const score1 = data.data?.judge_recommendation?.solution_1_score ?? 0;
+      const score2 = data.data?.judge_recommendation?.solution_2_score ?? 0;
+      
       const aiMessage = {
         id: Date.now() + 1,
         type: "ai",
         solution_1: data.data?.solution_1 || "No response from Mistral",
         solution_2: data.data?.solution_2 || "No response from Cohere",
         judge_recommendation: {
-          solution_1_score: data.data?.judge_recommendation?.solution_1_score || 0,
-          solution_2_score: data.data?.judge_recommendation?.solution_2_score || 0,
+          solution_1_score: score1,
+          solution_2_score: score2,
         },
         timestamp: new Date().toISOString(),
       };
 
-      console.log("✅ AI Message:", aiMessage);
+      console.log("✅ AI Message with scores:", aiMessage);
       setMessages((prev) => [...prev, aiMessage]);
 
-      // Refresh chat list to update the chat title if changed
       await loadChats();
 
     } catch (err) {
@@ -203,9 +224,10 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  // Clear messages
   const clearMessages = () => {
     setMessages([]);
+    setCurrentChatId(null);
+    setCurrentChatTitle(null);
   };
 
   return (
@@ -216,6 +238,7 @@ export const ChatProvider = ({ children }) => {
       sendMessage,
       chats,
       currentChatId,
+      currentChatTitle,
       isLoadingChats,
       loadChats,
       loadChat,
@@ -223,6 +246,8 @@ export const ChatProvider = ({ children }) => {
       renameChatTitle,
       deleteChatById,
       clearMessages,
+      setCurrentChatId,
+      setCurrentChatTitle,
     }}>
       {children}
     </ChatContext.Provider>

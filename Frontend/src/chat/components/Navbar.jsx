@@ -1,6 +1,5 @@
-
+// chat/components/Navbar.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { 
   Menu, 
   Zap, 
@@ -14,8 +13,10 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
+import { useChat } from '../hooks/useChat';
 
 const Navbar = ({ onToggleSidebar, onNewChat }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -23,6 +24,7 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
   
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const { currentChatTitle } = useChat();
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
@@ -82,19 +84,22 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
   const dropdownBg = isDark ? 'bg-[#1a1a1a]' : 'bg-white';
   const dropdownBorder = isDark ? 'border-[#2a2a2a]' : 'border-gray-200';
 
+  // Debug log
+  console.log("🔍 Navbar currentChatTitle:", currentChatTitle);
+
   return (
     <nav className={`flex items-center justify-between px-4 py-3 border-b ${borderColor} bg-transparent`}>
       {/* Left side */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={onToggleSidebar}
-          className={`p-2 rounded-lg ${hoverBg} transition-colors`}
+          className={`p-2 rounded-lg ${hoverBg} transition-colors flex-shrink-0`}
           aria-label="Toggle sidebar"
         >
           <Menu size={18} className="text-blue-400" />
         </button>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-shrink-0">
           <div
             className="flex items-center justify-center w-8 h-8 rounded-xl"
             style={{ background: 'linear-gradient(135deg, #3b82f6, #60a5fa)' }}
@@ -113,10 +118,25 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
             ClashGPT
           </span>
         </div>
+
+        {/* Display current chat title */}
+        {currentChatTitle && (
+          <div className="hidden md:flex items-center gap-2 ml-4 min-w-0">
+            <span className={`text-sm font-medium ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+              /
+            </span>
+            <span 
+              className={`text-sm font-medium truncate ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+              style={{ maxWidth: '300px' }}
+            >
+              {currentChatTitle}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Right side */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 flex-shrink-0">
         <button
           onClick={onNewChat}
           className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors text-white`}
@@ -128,7 +148,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
           <span>New Chat</span>
         </button>
 
-        {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
           className={`p-2 rounded-lg ${hoverBg} transition-colors`}
@@ -137,7 +156,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
           {isDark ? <Sun size={17} className="text-blue-400" /> : <Moon size={17} className="text-blue-500" />}
         </button>
 
-        {/* Notifications Dropdown */}
         <div className="relative">
           <button
             className={`p-2 rounded-lg ${hoverBg} transition-colors relative`}
@@ -181,7 +199,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
           )}
         </div>
 
-        {/* User Account Dropdown */}
         <div className="relative">
           <button
             className={`flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg ${hoverBg} transition-colors`}
@@ -209,8 +226,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
                 <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{getDisplayName()}</p>
                 <p className="text-xs text-gray-500 truncate">{getDisplayEmail()}</p>
               </div>
-              
-              {/* Profile Link */}
               <Link
                 to="/profile"
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg ${hoverBg} ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} text-sm transition-colors`}
@@ -219,8 +234,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
                 <span className="text-blue-400"><User size={15} /></span>
                 Profile
               </Link>
-              
-              {/* Settings Link */}
               <Link
                 to="/settings"
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg ${hoverBg} ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} text-sm transition-colors`}
@@ -229,8 +242,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
                 <span className="text-blue-400"><Settings size={15} /></span>
                 Settings
               </Link>
-              
-              {/* Help & Support Link */}
               <Link
                 to="/help-support"
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg ${hoverBg} ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} text-sm transition-colors`}
@@ -239,8 +250,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
                 <span className="text-blue-400"><HelpCircle size={15} /></span>
                 Help & Support
               </Link>
-
-              {/* Sign Out */}
               <div className={`border-t ${borderColor} mt-1 pt-1`}>
                 <button 
                   onClick={handleLogout}
@@ -255,7 +264,6 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
         </div>
       </div>
 
-      {/* Click Outside Overlay Backdrop */}
       {(showUserMenu || showNotifications) && (
         <div
           className="fixed inset-0 z-40"
@@ -270,4 +278,3 @@ const Navbar = ({ onToggleSidebar, onNewChat }) => {
 };
 
 export default Navbar;
-
